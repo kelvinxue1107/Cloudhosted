@@ -1,0 +1,56 @@
+{
+    "log": {
+      "loglevel": "warning",
+      "access": "/dev/stdout",
+      "error": "/dev/stderr"
+    },
+    "inbounds":{
+          "decryption": "none",
+          "fallbacks": [
+            {
+              "dest": 80
+            }
+          ]
+        },
+        "streamSettings": {
+          "network": "tcp",
+          "security": "tls",
+          "tlsSettings": {
+            "serverName": "your.domain.com",
+            "certificates": [
+              {
+                "certificateFile": "/etc/v2ray/certs/fullchain.crt",
+                "keyFile": "/etc/v2ray/certs/private.key"
+              }
+            ]
+          }
+        },
+        "sniffing": {
+          "enabled": true,
+          "destOverride": ["http", "tls"]
+        }
+      }
+    ],
+    "outbounds": [
+      {
+        "protocol": "freedom",
+        "settings": {}
+      },
+      {
+        "protocol": "blackhole",
+        "tag": "blocked"
+      }
+    ],
+    "routing": {
+      "domainStrategy": "AsIs",
+      "rules": [
+        {
+          "type": "field",
+          "ip": [
+            "geoip:private"
+          ],
+          "outboundTag": "blocked"
+        }
+      ]
+    }
+  }

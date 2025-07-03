@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: v2ray-deployment
+  namespace: v2ray
+  labels:
+    app: v2ray
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: v2ray
+  template:
+    metadata:
+      labels:
+        app: v2ray
+    spec:
+      containers:
+      - name: v2ray
+        image: your-registry/v2ray-vless:latest # Replace with your image path
+        ports:
+        - containerPort: 8443
+          name: vless-tcp
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/v2ray/config.json
+          subPath: config.json
+        - name: tls-certs
+          mountPath: /etc/v2ray/certs
+          readOnly: true
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        livenessProbe:
+          tcpSocket:
+            port: vless-tcp
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: vless-tcp
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: config-volume
+        configMap:
+          name: v2ray-config
+      - name: tls-certs
+        secret:
+          secretName: v2ray-tls-secret # Assumes a Secret named 'v2ray-tls-secret' exists
