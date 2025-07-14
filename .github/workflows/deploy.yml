@@ -1,0 +1,36 @@
+name: Deploy V2Ray Multi-Cloud
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  terraform_plan_dev:
+    if: github.event_name == 'pull_request'
+    #... steps to checkout, setup terraform, auth to vault, and run plan for dev
+
+  terraform_apply_dev:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: dev
+    #... steps to checkout, setup terraform, auth to vault, and run apply for dev
+    #... step to run ansible playbook for dev
+
+  manual_approval_prod:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: terraform_apply_dev
+    environment:
+      name: production
+      url: 'https://geforce.net' # Example URL
+    #... This job uses the environment's protection rule for manual approval
+
+  terraform_apply_prod:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: manual_approval_prod
+    environment: production
+    #... steps to checkout, setup terraform, auth to vault, and run apply for prod
+    #... step to run ansible playbook for prod
